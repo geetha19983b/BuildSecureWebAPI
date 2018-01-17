@@ -20,7 +20,21 @@ namespace ExpenseTracker.API
             config.Routes.MapHttpRoute(name: "DefaultRouting",
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional });
+            //support only json.chrome default accepts xml we are overriding to 
+            //send response in json
+            config.Formatters.JsonFormatter.SupportedMediaTypes
+                .Add(new MediaTypeHeaderValue("text/html"));
 
+            //remove xml formatter then only json will be returned
+
+            // config.Formatters.XmlFormatter.SupportedMediaTypes.Clear();
+
+            //return json result as formatted
+            config.Formatters.JsonFormatter.SerializerSettings.Formatting
+                = Newtonsoft.Json.Formatting.Indented;
+            //return in camel case
+            config.Formatters.JsonFormatter.SerializerSettings.ContractResolver
+                = new CamelCasePropertyNamesContractResolver();
             return config;
              
         }
