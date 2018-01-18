@@ -29,12 +29,16 @@ namespace ExpenseTracker.API
 
             // config.Formatters.XmlFormatter.SupportedMediaTypes.Clear();
 
+            //support patch request (nuget of marvin )
+            config.Formatters.JsonFormatter.SupportedMediaTypes.Add(
+               new MediaTypeHeaderValue("application/json-patch+json"));
+
             //return json result as formatted
-            config.Formatters.JsonFormatter.SerializerSettings.Formatting
-                = Newtonsoft.Json.Formatting.Indented;
+            //config.Formatters.JsonFormatter.SerializerSettings.Formatting
+            //    = Newtonsoft.Json.Formatting.Indented;
             //return in camel case
-            config.Formatters.JsonFormatter.SerializerSettings.ContractResolver
-                = new CamelCasePropertyNamesContractResolver();
+            //config.Formatters.JsonFormatter.SerializerSettings.ContractResolver
+            //    = new CamelCasePropertyNamesContractResolver();
             return config;
              
         }

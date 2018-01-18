@@ -26,9 +26,79 @@ namespace ExpenseTracker.API.Controllers
         {
             _repository = repository;
         }
-         
 
-     
+
+        // api/expensegroups/1/expenses
+
+        [Route("expensegroups/{expenseGroupId}/expenses")]
+        public IHttpActionResult Get(int expenseGroupId)
+        {
+            try
+            {
+                var expenses = _repository.GetExpenses(expenseGroupId);
+
+                if (expenses == null)
+                {
+                    // this means the expensegroup doesn't exist
+                    return NotFound();
+                }
+
+                var expensesResult = expenses
+                    .ToList()
+                    .Select(exp => _expenseFactory.CreateExpense(exp));
+
+                return Ok(expensesResult);
+
+            }
+            catch (Exception)
+            {
+                return InternalServerError();
+            }
+        }
+
+        [Route("expensegroups/{expenseGroupId}/expenses/{id}")]
+        [Route("expenses/{id}")]
+        public IHttpActionResult Get(int id, int? expenseGroupId = null)
+        {
+            try
+            {
+                Repository.Entities.Expense expense = null;
+
+                if (expenseGroupId == null)
+                {
+                    expense = _repository.GetExpense(id);
+                }
+                else
+                {
+                    var expensesForGroup = _repository.GetExpenses((int)expenseGroupId);
+
+                    // if the group doesn't exist, we shouldn't try to get the expenses
+                    if (expensesForGroup != null)
+                    {
+                        expense = expensesForGroup.FirstOrDefault(eg => eg.Id == id);
+                    }
+                }
+
+                if (expense != null)
+                {
+                    var returnValue = _expenseFactory.CreateExpense(expense);
+                    return Ok(returnValue);
+                }
+                else
+                {
+                    return NotFound();
+                }
+
+
+            }
+            catch (Exception)
+            {
+                return InternalServerError();
+            }
+        }
+
+
+
 
         [Route("expenses/{id}")]
         public IHttpActionResult Delete(int id)
@@ -129,7 +199,7 @@ namespace ExpenseTracker.API.Controllers
                 // find 
                 if (expensePatchDocument == null)
                 {
-                    return BadRequest(); 
+                    return BadRequest();
                 }
 
                 var expense = _repository.GetExpense(id);
@@ -163,6 +233,6 @@ namespace ExpenseTracker.API.Controllers
         }
 
 
-         
+
     }
 }

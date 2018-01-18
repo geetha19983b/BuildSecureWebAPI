@@ -1,0 +1,37 @@
+﻿//put request
+
+{
+"Id":18,
+"userid":"https://expensetracker/embedded_1",
+"title":"New ExpenseGroup Modified 18",
+"description":"ExpenseGroup description",
+"expensegroupstatusID":1
+}
+
+//post request
+
+In req header
+Content-type: application/json
+
+
+{
+"userid":"https://expensetracker/embedded_1",
+"title":"New ExpenseGroup Modified 18",
+"description":"ExpenseGroup description",
+"expensegroupstatusID":1
+}
+
+//patch request
+install-package marvin.jsonpatch
+Content-Type:application/json-patch+json
+
+[
+{"op":"replace","path":"/title","value":"New Title"},
+{"op":"copy","from":"/title","path":"/description"}
+]
+//for dynamic sorting
+//install-package system.linq.dynamic
+//sort query string
+//http://localhost/api/expensegroups?sort=-expensegroupstatusid,title
+//sort and filter
+//http://localhost/api/expensegroups?status=open&sort=title
