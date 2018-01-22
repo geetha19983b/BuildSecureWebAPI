@@ -7,6 +7,8 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Http;
+using ExpenseTracker.API.Helpers;
+using System.Web.Http.Routing;
 
 namespace ExpenseTracker.API.Controllers
 {
@@ -16,6 +18,8 @@ namespace ExpenseTracker.API.Controllers
 
         IExpenseTrackerRepository _repository;
         ExpenseFactory _expenseFactory = new ExpenseFactory();
+
+        const int maxPageSize = 10;
 
         public ExpensesController()
         {
@@ -28,13 +32,20 @@ namespace ExpenseTracker.API.Controllers
         }
 
 
-        // api/expensegroups/1/expenses
-
-        [Route("expensegroups/{expenseGroupId}/expenses")]
-        public IHttpActionResult Get(int expenseGroupId)
+        [Route("expensegroups/{expenseGroupId}/expenses", Name = "ExpensesForGroup")]
+        public IHttpActionResult Get(int expenseGroupId, string fields = null, string sort = "date"
+            , int page = 1, int pageSize = maxPageSize)
         {
             try
             {
+
+                List<string> lstOfFields = new List<string>();
+
+                if (fields != null)
+                {
+                    lstOfFields = fields.ToLower().Split(',').ToList();
+                }
+
                 var expenses = _repository.GetExpenses(expenseGroupId);
 
                 if (expenses == null)
@@ -43,9 +54,60 @@ namespace ExpenseTracker.API.Controllers
                     return NotFound();
                 }
 
+                // ensure the page size isn't larger than the maximum.
+                if (pageSize > maxPageSize)
+                {
+                    pageSize = maxPageSize;
+                }
+
+                // calculate data for metadata
+                var totalCount = expenses.Count();
+                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+                var urlHelper = new UrlHelper(Request);
+
+                var prevLink = page > 1 ? urlHelper.Link("ExpensesForGroup",
+                    new
+                    {
+                        page = page - 1,
+                        pageSize = pageSize,
+                        expenseGroupId = expenseGroupId,
+                        fields = fields,
+                        sort = sort
+                    }) : "";
+                var nextLink = page < totalPages ? urlHelper.Link("ExpensesForGroup",
+                    new
+                    {
+                        page = page + 1,
+                        pageSize = pageSize,
+                        expenseGroupId = expenseGroupId,
+                        fields = fields,
+                        sort = sort
+                    }) : "";
+
+
+                var paginationHeader = new
+                {
+                    currentPage = page,
+                    pageSize = pageSize,
+                    totalCount = totalCount,
+                    totalPages = totalPages,
+                    previousPageLink = prevLink,
+                    nextPageLink = nextLink
+                };
+
+                HttpContext.Current.Response.Headers.Add("X-Pagination",
+                Newtonsoft.Json.JsonConvert.SerializeObject(paginationHeader));
+
+
+
                 var expensesResult = expenses
+                    .ApplySort(sort)
+                    .Skip(pageSize * (page - 1))
+                    .Take(pageSize)
                     .ToList()
-                    .Select(exp => _expenseFactory.CreateExpense(exp));
+                    .Select(exp => _expenseFactory.CreateDataShapedObject(exp, lstOfFields));
+
 
                 return Ok(expensesResult);
 
@@ -56,12 +118,20 @@ namespace ExpenseTracker.API.Controllers
             }
         }
 
-        [Route("expensegroups/{expenseGroupId}/expenses/{id}")]
-        [Route("expenses/{id}")]
-        public IHttpActionResult Get(int id, int? expenseGroupId = null)
+
+        [VersionedRoute("expensegroups/{expenseGroupId}/expenses/{id}", 1)]
+        [VersionedRoute("expenses/{id}", 1)]
+        public IHttpActionResult Get(int id, int? expenseGroupId = null, string fields = null)
         {
             try
             {
+                List<string> lstOfFields = new List<string>();
+
+                if (fields != null)
+                {
+                    lstOfFields = fields.ToLower().Split(',').ToList();
+                }
+
                 Repository.Entities.Expense expense = null;
 
                 if (expenseGroupId == null)
@@ -81,14 +151,13 @@ namespace ExpenseTracker.API.Controllers
 
                 if (expense != null)
                 {
-                    var returnValue = _expenseFactory.CreateExpense(expense);
+                    var returnValue = _expenseFactory.CreateDataShapedObject(expense, lstOfFields);
                     return Ok(returnValue);
                 }
                 else
                 {
                     return NotFound();
                 }
-
 
             }
             catch (Exception)
@@ -99,6 +168,52 @@ namespace ExpenseTracker.API.Controllers
 
 
 
+        [VersionedRoute("expensegroups/{expenseGroupId}/expenses/{id}", 2)]
+        [VersionedRoute("expenses/{id}", 2)]
+        public IHttpActionResult GetV2(int id, int? expenseGroupId = null, string fields = null)
+        {
+            try
+            {
+                List<string> lstOfFields = new List<string>();
+
+                if (fields != null)
+                {
+                    lstOfFields = fields.ToLower().Split(',').ToList();
+                }
+
+                Repository.Entities.Expense expense = null;
+
+                if (expenseGroupId == null)
+                {
+                    expense = _repository.GetExpense(id);
+                }
+                else
+                {
+                    var expensesForGroup = _repository.GetExpenses((int)expenseGroupId);
+
+                    // if the group doesn't exist, we shouldn't try to get the expenses
+                    if (expensesForGroup != null)
+                    {
+                        expense = expensesForGroup.FirstOrDefault(eg => eg.Id == id);
+                    }
+                }
+
+                if (expense != null)
+                {
+                    var returnValue = _expenseFactory.CreateDataShapedObject(expense, lstOfFields);
+                    return Ok(returnValue);
+                }
+                else
+                {
+                    return NotFound();
+                }
+
+            }
+            catch (Exception)
+            {
+                return InternalServerError();
+            }
+        }
 
         [Route("expenses/{id}")]
         public IHttpActionResult Delete(int id)

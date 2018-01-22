@@ -35,3 +35,24 @@ Content-Type:application/json-patch+json
 //http://localhost/api/expensegroups?sort=-expensegroupstatusid,title
 //sort and filter
 //http://localhost/api/expensegroups?status=open&sort=title
+
+//using expando object we can specify the exact fields which gets listed in the json
+  //http://localhost/api/expensegroups/1/expenses?fields=id,description
+  //get all expenses
+  //http://localhost/api/expensegroups?fields=id,title,expenses.id
+  //get id from the expenses
+  //http://localhost/api/expensegroups?fields=id,title,expenses.id
+  //to implement caching by using etag
+  --install-package Cachecow.Server
+  //config.MessageHandlers.Add(new CacheCow.Server.CachingHandler(config))
+
+  //then in headers in request add the below line
+
+  //If-None-Match:ETag:add the etag which you got during the initial get
+
+  //to enable cross origin request CORS
+  //install-package microsoft.aspnet.webapi.cors
+  // [EnableCors("*","*","*")] --origin,headers,methods allowed
+
+  //to enable consuming web api from mvc or windows client
+  //install-package microsoft.net.http

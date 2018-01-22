@@ -39,6 +39,10 @@ namespace ExpenseTracker.API
             //return in camel case
             //config.Formatters.JsonFormatter.SerializerSettings.ContractResolver
             //    = new CamelCasePropertyNamesContractResolver();
+
+            //caching handling using etag,send a get request the retunred etag use in the subsequent request header
+            //if resource has not been changed then 304 will be returned
+            config.MessageHandlers.Add(new CacheCow.Server.CachingHandler(config));
             return config;
              
         }
