@@ -22,7 +22,7 @@ namespace ExpenseTracker.Repository
         public ExpenseTrackerEFRepository(ExpenseTrackerContext ctx)
         {
             _ctx = ctx;
-            
+
             // Disable lazy loading - if not, related properties are auto-loaded when
             // they are accessed for the first time, which means they'll be included when
             // we serialize (b/c the serialization process accesses those properties).  
@@ -36,7 +36,7 @@ namespace ExpenseTracker.Repository
 
         public Expense GetExpense(int id, int? expenseGroupId = null)
         {
-            return _ctx.Expenses.FirstOrDefault(e => e.Id == id && 
+            return _ctx.Expenses.FirstOrDefault(e => e.Id == id &&
                 (expenseGroupId == null || expenseGroupId == e.ExpenseGroupId));
         }
 
@@ -55,8 +55,8 @@ namespace ExpenseTracker.Repository
             {
                 return null;
             }
-            
-           
+
+
         }
 
 
@@ -64,10 +64,10 @@ namespace ExpenseTracker.Repository
         {
             return _ctx.Expenses;
         }
-                
+
         public ExpenseGroup GetExpenseGroup(int id)
         {
-           return _ctx.ExpenseGroups.FirstOrDefault(eg => eg.Id == id);
+            return _ctx.ExpenseGroups.FirstOrDefault(eg => eg.Id == id);
         }
 
 
@@ -86,7 +86,7 @@ namespace ExpenseTracker.Repository
         {
             return _ctx.ExpenseGroups.Include("Expenses").FirstOrDefault(eg => eg.Id == id);
         }
-        
+
         public IQueryable<ExpenseGroup> GetExpenseGroups()
         {
             return _ctx.ExpenseGroups;
@@ -124,8 +124,8 @@ namespace ExpenseTracker.Repository
         /// <returns></returns>
         public RepositoryActionResult<ExpenseGroup> InsertExpenseGroup(ExpenseGroup eg)
         {
-           try
-                {
+            try
+            {
                 _ctx.ExpenseGroups.Add(eg);
                 var result = _ctx.SaveChanges();
                 if (result > 0)
@@ -136,18 +136,18 @@ namespace ExpenseTracker.Repository
                 {
                     return new RepositoryActionResult<ExpenseGroup>(eg, RepositoryActionStatus.NothingModified, null);
                 }
-                }
-           catch (Exception ex)
-           {
-               return new RepositoryActionResult<ExpenseGroup>(null, RepositoryActionStatus.Error, ex);
-           }
+            }
+            catch (Exception ex)
+            {
+                return new RepositoryActionResult<ExpenseGroup>(null, RepositoryActionStatus.Error, ex);
+            }
         }
 
 
         public RepositoryActionResult<Expense> InsertExpense(Expense e)
         {
-          try
-                {
+            try
+            {
                 _ctx.Expenses.Add(e);
                 var result = _ctx.SaveChanges();
                 if (result > 0)
@@ -159,42 +159,42 @@ namespace ExpenseTracker.Repository
                     return new RepositoryActionResult<Expense>(e, RepositoryActionStatus.NothingModified, null);
                 }
 
-                }
-          catch (Exception ex)
-          {
-              return new RepositoryActionResult<Expense>(null, RepositoryActionStatus.Error, ex);
-          }
+            }
+            catch (Exception ex)
+            {
+                return new RepositoryActionResult<Expense>(null, RepositoryActionStatus.Error, ex);
+            }
         }
 
 
         public RepositoryActionResult<ExpenseGroup> UpdateExpenseGroup(ExpenseGroup eg)
         {
-           try
+            try
+            {
+
+                // you can only update when an expensegroup already exists for this id
+
+                var existingEG = _ctx.ExpenseGroups.FirstOrDefault(exg => exg.Id == eg.Id);
+
+                if (existingEG == null)
                 {
+                    return new RepositoryActionResult<ExpenseGroup>(eg, RepositoryActionStatus.NotFound);
+                }
 
-                    // you can only update when an expensegroup already exists for this id
+                // change the original entity status to detached; otherwise, we get an error on attach
+                // as the entity is already in the dbSet
 
-                    var existingEG = _ctx.ExpenseGroups.FirstOrDefault(exg => exg.Id == eg.Id);
+                // set original entity state to detached
+                _ctx.Entry(existingEG).State = EntityState.Detached;
 
-                    if (existingEG == null)
-                    {
-                        return new RepositoryActionResult<ExpenseGroup>(eg, RepositoryActionStatus.NotFound);
-                    }
+                // attach & save
+                _ctx.ExpenseGroups.Attach(eg);
 
-                    // change the original entity status to detached; otherwise, we get an error on attach
-                    // as the entity is already in the dbSet
+                // set the updated entity state to modified, so it gets updated.
+                _ctx.Entry(eg).State = EntityState.Modified;
 
-                    // set original entity state to detached
-                    _ctx.Entry(existingEG).State = EntityState.Detached;
-                    
-                    // attach & save
-                    _ctx.ExpenseGroups.Attach(eg);
 
-                    // set the updated entity state to modified, so it gets updated.
-                    _ctx.Entry(eg).State = EntityState.Modified;
-                   
-
-                   var result = _ctx.SaveChanges();
+                var result = _ctx.SaveChanges();
                 if (result > 0)
                 {
                     return new RepositoryActionResult<ExpenseGroup>(eg, RepositoryActionStatus.Updated);
@@ -204,90 +204,90 @@ namespace ExpenseTracker.Repository
                     return new RepositoryActionResult<ExpenseGroup>(eg, RepositoryActionStatus.NothingModified, null);
                 }
 
-                }
-           catch (Exception ex)
-           {
-               return new RepositoryActionResult<ExpenseGroup>(null, RepositoryActionStatus.Error, ex);
-           }
- 
+            }
+            catch (Exception ex)
+            {
+                return new RepositoryActionResult<ExpenseGroup>(null, RepositoryActionStatus.Error, ex);
+            }
+
         }
 
 
-        public  RepositoryActionResult<Expense> UpdateExpense(Expense e)
+        public RepositoryActionResult<Expense> UpdateExpense(Expense e)
         {
-                try
+            try
+            {
+
+                // you can only update when an expense already exists for this id
+
+                var existingExpense = _ctx.Expenses.FirstOrDefault(exp => exp.Id == e.Id);
+
+                if (existingExpense == null)
                 {
-
-                    // you can only update when an expense already exists for this id
-
-                    var existingExpense = _ctx.Expenses.FirstOrDefault(exp => exp.Id == e.Id);
-
-                    if (existingExpense == null)
-                    {
-                        return new RepositoryActionResult<Expense>(e, RepositoryActionStatus.NotFound);
-                    }
-
-                    // change the original entity status to detached; otherwise, we get an error on attach
-                    // as the entity is already in the dbSet
-
-                    // set original entity state to detached
-                    _ctx.Entry(existingExpense).State = EntityState.Detached;
-
-                    // attach & save
-                    _ctx.Expenses.Attach(e);
-
-                    // set the updated entity state to modified, so it gets updated.
-                    _ctx.Entry(e).State = EntityState.Modified;
-
-
-                    var result = _ctx.SaveChanges();
-                    if (result > 0)
-                    {
-                         return new RepositoryActionResult<Expense>(e, RepositoryActionStatus.Updated);
-                    }
-                    else
-                    {
-                        return new RepositoryActionResult<Expense>(e, RepositoryActionStatus.NothingModified, null);
-                    }
+                    return new RepositoryActionResult<Expense>(e, RepositoryActionStatus.NotFound);
                 }
-                catch (Exception ex)
+
+                // change the original entity status to detached; otherwise, we get an error on attach
+                // as the entity is already in the dbSet
+
+                // set original entity state to detached
+                _ctx.Entry(existingExpense).State = EntityState.Detached;
+
+                // attach & save
+                _ctx.Expenses.Attach(e);
+
+                // set the updated entity state to modified, so it gets updated.
+                _ctx.Entry(e).State = EntityState.Modified;
+
+
+                var result = _ctx.SaveChanges();
+                if (result > 0)
                 {
-                    return new RepositoryActionResult<Expense>(null, RepositoryActionStatus.Error, ex);
+                    return new RepositoryActionResult<Expense>(e, RepositoryActionStatus.Updated);
                 }
-           
+                else
+                {
+                    return new RepositoryActionResult<Expense>(e, RepositoryActionStatus.NothingModified, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                return new RepositoryActionResult<Expense>(null, RepositoryActionStatus.Error, ex);
+            }
+
         }
 
         public RepositoryActionResult<Expense> DeleteExpense(int id)
         {
-                try
+            try
+            {
+                var exp = _ctx.Expenses.Where(e => e.Id == id).FirstOrDefault();
+                if (exp != null)
                 {
-                    var exp = _ctx.Expenses.Where(e => e.Id == id).FirstOrDefault();
-                    if (exp != null)
-                    {
-                        _ctx.Expenses.Remove(exp);
-                        _ctx.SaveChanges();
-                        return new RepositoryActionResult<Expense>(null, RepositoryActionStatus.Deleted);
-                    }
-                    return new RepositoryActionResult<Expense>(null, RepositoryActionStatus.NotFound);
+                    _ctx.Expenses.Remove(exp);
+                    _ctx.SaveChanges();
+                    return new RepositoryActionResult<Expense>(null, RepositoryActionStatus.Deleted);
                 }
-                catch (Exception ex)
-                {
-                    return new RepositoryActionResult<Expense>(null, RepositoryActionStatus.Error, ex);
-                }
+                return new RepositoryActionResult<Expense>(null, RepositoryActionStatus.NotFound);
+            }
+            catch (Exception ex)
+            {
+                return new RepositoryActionResult<Expense>(null, RepositoryActionStatus.Error, ex);
+            }
         }
 
         public RepositoryActionResult<ExpenseGroup> DeleteExpenseGroup(int id)
         {
             try
             {
-            
+
                 var eg = _ctx.ExpenseGroups.Where(e => e.Id == id).FirstOrDefault();
                 if (eg != null)
                 {
                     // also remove all expenses linked to this expensegroup
-                    
+
                     _ctx.ExpenseGroups.Remove(eg);
-                    
+
                     _ctx.SaveChanges();
                     return new RepositoryActionResult<ExpenseGroup>(null, RepositoryActionStatus.Deleted);
                 }

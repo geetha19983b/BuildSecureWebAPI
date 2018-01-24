@@ -13,6 +13,8 @@ namespace ExpenseTracker.API
         public static HttpConfiguration Register()
         {
             var config = new HttpConfiguration();
+            //enable cross origin request to web api
+            config.EnableCors();
 
             // Web API routes
             config.MapHttpAttributeRoutes();

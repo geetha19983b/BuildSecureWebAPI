@@ -8,7 +8,7 @@ using System.Web.Http;
 
 namespace ExpenseTracker.API.Controllers
 {
-  //  [RoutePrefix("api/expensegroupstatusses")]
+    //  [RoutePrefix("api/expensegroupstatusses")]
     public class ExpenseGroupStatussesController : ApiController
     {
         IExpenseTrackerRepository _repository;
@@ -24,7 +24,7 @@ namespace ExpenseTracker.API.Controllers
             _repository = repository;
         }
 
-         
+
         public IHttpActionResult Get()
         {
 

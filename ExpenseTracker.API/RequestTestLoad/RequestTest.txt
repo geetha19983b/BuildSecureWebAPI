@@ -56,3 +56,6 @@ Content-Type:application/json-patch+json
 
   //to enable consuming web api from mvc or windows client
   //install-package microsoft.net.http
+
+  //paged list mvc
+  //install-package pagedlist.mvc
