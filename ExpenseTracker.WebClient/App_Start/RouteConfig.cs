@@ -16,7 +16,7 @@ namespace ExpenseTracker.WebClient
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
-                defaults: new { controller = "ExpenseGroup", action = "Index", id = UrlParameter.Optional }
+                defaults: new { controller = "ExpenseGroups", action = "Index", id = UrlParameter.Optional }
             );
         }
     }

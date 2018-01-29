@@ -48,6 +48,10 @@
       <HintPath>..\packages\Antlr.3.4.1.9004\lib\Antlr3.Runtime.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Marvin.JsonPatch, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Marvin.JsonPatch.2.0.0\lib\portable40-net40+win8\Marvin.JsonPatch.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
       <Private>True</Private>
@@ -141,13 +145,14 @@
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
-    <Compile Include="Controllers\ExpenseGroupController.cs" />
+    <Compile Include="Controllers\ExpenseGroupsController.cs" />
     <Compile Include="Controllers\ExpensesController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Helpers\ExpenseTrackerHttpClient.cs" />
     <Compile Include="Helpers\HeaderParser.cs" />
+    <Compile Include="Helpers\HttpClientExtensions.cs" />
     <Compile Include="Helpers\PagingInfo.cs" />
     <Compile Include="Models\ExpenseGroupsViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -157,13 +162,16 @@
     <Content Include="packages.config" />
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\ExpenseGroup\Index.cshtml" />
+    <Content Include="Views\ExpenseGroups\Index.cshtml" />
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
     <Content Include="fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="fonts\glyphicons-halflings-regular.eot" />
     <Content Include="Scripts\jquery-1.10.2.min.map" />
-    <Content Include="Views\ExpenseGroup\Create.cshtml" />
-    <Content Include="Views\ExpenseGroup\Edit.cshtml" />
+    <Content Include="Views\ExpenseGroups\Create.cshtml" />
+    <Content Include="Views\ExpenseGroups\Edit.cshtml" />
+    <Content Include="Views\ExpenseGroups\Details.cshtml" />
+    <Content Include="Views\Expenses\Edit.cshtml" />
+    <Content Include="Views\Expenses\Create.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -174,7 +182,6 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Content\themes\" />
-    <Folder Include="Views\Expenses\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExpenseTracker.API\ExpenseTracker.API.csproj">
